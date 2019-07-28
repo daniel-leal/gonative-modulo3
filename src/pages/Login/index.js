@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 
+import { ActivityIndicator } from 'react-native';
+
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import api from '~/services/api';
-import * as LoginActions from '~/store/actions/login';
+import { Creators as LoginActions } from '~/store/ducks/login';
 
 import {
   Container, Input, Button, ButtonText, Error,
@@ -14,22 +15,14 @@ class Login extends Component {
 
   handleSubmit = async () => {
     const { username } = this.state;
-    const { loginSuccess, loginFailure, navigation } = this.props;
+    const { loginRequest } = this.props;
 
-    try {
-      await api.get(`/users/${username}`);
-
-      loginSuccess(username);
-
-      navigation.navigate('Repositories');
-    } catch (err) {
-      loginFailure();
-    }
+    loginRequest(username);
   };
 
   render() {
     const { username } = this.state;
-    const { error } = this.props;
+    const { error, loading } = this.props;
 
     return (
       <Container>
@@ -43,7 +36,11 @@ class Login extends Component {
           placeholder="Digite seu usuário"
         />
         <Button onPress={this.handleSubmit}>
-          <ButtonText>Entrar</ButtonText>
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <ButtonText>Entrar</ButtonText>
+          )}
         </Button>
       </Container>
     );
@@ -52,6 +49,7 @@ class Login extends Component {
 
 const mapStateToProps = state => ({
   error: state.login.error,
+  loading: state.login.loading,
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators(LoginActions, dispatch);
